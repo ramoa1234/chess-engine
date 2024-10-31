@@ -1,15 +1,59 @@
-import chess, ctypes
+import chess, ctypes, os
+DATABASE_ID_COUNT = os.getenv('DATABASE_ID_COUNT')
 
-board = chess.Board()
-print(board)
-
+#need to remake so that value are added to there correct boards
 def update_bit_board(number, position):
     column = ord(position[0]) - 97
     index = int(position[1]) * 8 + column
     return number | (1 << index)
 
-#can update to set variables based off of the pieee type than update 
-def set_board():
+def move_piece(board, piece_type, position, new_position):
+    board &= (1 << position)
+    board |= (1 << new_position)
+    print(board)
+    return board
+
+def set_bit_board():
+    white_pawns = ctypes.c_uint64(0)
+    white_knights = ctypes.c_uint64(0)
+    white_bishops = ctypes.c_uint64(0)
+    white_rooks = ctypes.c_uint64(0)
+    white_queens = ctypes.c_uint64(0)
+    white_king = ctypes.c_uint64(0)
+
+    black_pawns = ctypes.c_uint64(0)
+    black_knights = ctypes.c_uint64(0)
+    black_bishops = ctypes.c_uint64(0)
+    black_rooks = ctypes.c_uint64(0)
+    black_queens = ctypes.c_uint64(0)
+    black_king = ctypes.c_uint64(0)
+
+    return [
+        white_pawns, white_knights, white_bishops, white_rooks, white_queens, white_king,
+        black_pawns, black_knights, black_bishops, black_rooks, black_queens, black_king
+    ]    
+
+
+def set_curr_board(boards,parent):
+
+    board = {
+        'board': boards,
+        'root': True if not parent else False,
+        'parent': parent if parent else None,
+        'children': []
+    }
+    return board
+
+def board_object(piece_type, board, color, parent):
+    board = {
+        "piece_type": piece_type,
+        'board': board,
+        'color': color,
+        'parent': parent,
+        'children': []
+    }
+
+def set_board(board):
     boards = set_bit_board()
     white_pawns = boards[0].value
     white_rooks = boards[1].value
@@ -24,7 +68,6 @@ def set_board():
     black_bishop = boards[9].value
     black_queen = boards[10].value
     black_king = boards[11].value
-
 
     for square in chess.SQUARES:
         piece = board.piece_at(square)
@@ -55,37 +98,61 @@ def set_board():
                 black_queen = update_bit_board(black_queen, chess.square_name(square))
             if piece.piece_type == chess.KING and color == 'Black':
                 black_king = update_bit_board(black_king, chess.square_name(square))
-
-    return ( white_pawns, white_rooks, white_knights,white_bishop, white_queen, white_king,
-            black_pawns, black_rooks, black_knights, black_bishop, black_queen, black_king
-    )
-
-def set_bit_board():
-    white_pawns = ctypes.c_uint64(0)
-    white_knights = ctypes.c_uint64(0)
-    white_bishops = ctypes.c_uint64(0)
-    white_rooks = ctypes.c_uint64(0)
-    white_queens = ctypes.c_uint64(0)
-    white_king = ctypes.c_uint64(0)
-
-    black_pawns = ctypes.c_uint64(0)
-    black_knights = ctypes.c_uint64(0)
-    black_bishops = ctypes.c_uint64(0)
-    black_rooks = ctypes.c_uint64(0)
-    black_queens = ctypes.c_uint64(0)
-    black_king = ctypes.c_uint64(0)
-
+    print(white_knights)
     return [
-        white_pawns, white_knights, white_bishops, white_rooks, white_queens, white_king,
-        black_pawns, black_knights, black_bishops, black_rooks, black_queens, black_king
-    ]    
+        white_pawns, white_knights, white_bishop, white_rooks, white_queen, white_king,
+        black_pawns, black_knights, black_bishop, black_rooks, black_queen, black_king
+    ] 
+
+
+
+class bitboard:
+    def __init__(self, board):
+        self.board = set_board
+        
+        
+
+ 
+
+def generate_move(board, count):
+     for move in board.legal_moves:
+        new_board = board
+        new_bit_board = bitboard(new_board)
+        piece_type = board.piece_type_at(move.from_square)
+        position = move.from_square
+        new_position = move.to_square
+        print(new_bit_board)
+
+
+
+def generate_move_old(board, count, parent):
+    current_board = set_curr_board(board, parent)
+    for move in board.legal_moves:
+        new_board = board
+        new_bit_board = set_board(new_board)
+        piece_type = board.piece_type_at(move.from_square)
+        position = move.from_square
+        new_position = move.to_square
+        temp_value = board_object(piece_type, )
+        turn = 'white turn' if board.turn == chess.WHITE else 'blacks turn'
+        print(piece_type, turn)
+        if piece_type == 1:
+            move_piece(new_bit_board[0], piece_type, position, new_position)
+        if piece_type == 2:
+            move_piece(new_bit_board[1], piece_type, position, new_position) 
+
+
+        #need to take in which bitboard is being moved move_piece(new_bit_board, new_position, position, new_position)
+        
+
+
 
 def train_against_self():
-    pass
+    board = chess.Board()
+    print(board.legal_moves)
+    count = 0
+    generate_move_old(board, count, parent=None)
+    
 
-test = set_board()
-count = 0
-for board in test:
-    count+=1
-    print(count)
-    print(bin(board))
+
+train_against_self()
