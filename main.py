@@ -188,7 +188,7 @@ def generate_move(board, count):
         position = move.from_square
         new_position = move.to_square
         print(new_bit_board)
-
+    
 
 
 def generate_move_old(board, count=0):
