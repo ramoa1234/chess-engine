@@ -22,14 +22,12 @@ class bit_board():
         #need to find out how to create a id fornoards
         self.chess_python_board = chess_python_board
         self.intialize_bit_board()
-        ID = int(os.getenv("DATABASE_ID"))
-        ID += 1
         self.parent = []
         self.children = []
 
     def intialize_bit_board(self): 
         #each is an individual board, possible moves list set other board ids?
-        self.white_pawns = ctypes.c_uint64(0)
+        self.white_pawn = ctypes.c_uint64(0)
         self.white_pawns_possible_moves = []
         self.white_knight = ctypes.c_uint64(0)
         self.white_bishop = ctypes.c_uint64(0)
@@ -50,12 +48,12 @@ class bit_board():
                 #update to just have location
                 color = "White" if piece.color == chess.WHITE else "Black"
                 if piece.piece_type == chess.PAWN and color == "White":
-                    self.white_pawns = ctypes.c_uint64(update_bit_board(self.white_pawns.value, chess.square_name(square)))
+                    self.white_pawns = ctypes.c_uint64(update_bit_board(self.white_pawn.value, chess.square_name(square)))
                     print(bin(self.white_pawns.value))
                 if piece.piece_type == chess.ROOK and color == 'White':
                     self.white_rooks = ctypes.c_uint64(update_bit_board(self.white_rooks.value, chess.square_name(square)))
                 if piece.piece_type == chess.KNIGHT and color == "white":
-                    self.fwhite_knights = ctypes.c_uint64(update_bit_board(self.white_knights.value, chess.square_name(square)))
+                    self.white_knights = ctypes.c_uint64(update_bit_board(self.white_knight.value, chess.square_name(square)))
                 if piece.piece_type == chess.BISHOP and color == 'White':
                     self.white_bishop = ctypes.c_uint64(update_bit_board(self.white_bishop.value, chess.square_name(square)))
                 if piece.piece_type == chess.QUEEN and color == 'White':
@@ -64,25 +62,44 @@ class bit_board():
                     self.white_king = ctypes.c_uint64(update_bit_board(self.white_king.value, chess.square_name(square)))
                 
                 if piece.piece_type == chess.PAWN and color == "Black":
-                    self.black_pawns = ctypes.c_uint64(update_bit_board(self.black_pawns.value, chess.square_name(square)))
+                    self.black_pawns = ctypes.c_uint64(update_bit_board(self.black_pawn.value, chess.square_name(square)))
                 if piece.piece_type == chess.ROOK and color == 'Black':
                     self.black_rooks = ctypes.c_uint64(update_bit_board(self.black_rooks.value, chess.square_name(square)))
                 if piece.piece_type == chess.KNIGHT and color == "Black":
-                    self.black_knights = ctypes.c_uint64(update_bit_board(self.black_knights.value, chess.square_name(square)))
+                    self.black_knights = ctypes.c_uint64(update_bit_board(self.black_knight.value, chess.square_name(square)))
                 if piece.piece_type == chess.BISHOP and color == 'Black':
                     self.black_bishop = ctypes.c_uint64(update_bit_board(self.black_bishop.value, chess.square_name(square)))
                 if piece.piece_type == chess.QUEEN and color == 'Black':
                     self.black_queen = ctypes.c_uint64(update_bit_board(self.black_queen.value, chess.square_name(square)))
                 if piece.piece_type == chess.KING and color == 'Black':
                     self.black_king = ctypes.c_uint64(update_bit_board(self.black_king.value, chess.square_name(square)))
-        
+
+
+
+    def connect_db(self):
+        user_name = os.getnev('DATABASE_USERNAME')
+        db_name = os.getenv('DATABASE_NAME')
+        db_connection = connection.MySQLConnection(user=user_name, password = '',
+                                                   host='127.0.0.1', 
+                                                   database=db_name)
+        connection = db_connection.cursor()
+        return connection
+
+    def lookup_move(self, board):
+        connection = self.connect_db() 
+        connection.execute(f'SELECT ALL {board.places_filled} FROM moves')
+
+    def insert(board):
+        #pass in list to sql for all possible children
+        pass
+
     #ONLY MEANT TO APPEND ALL CHILD OR PARENT NODES
     def generate_moves(self, parent_board):
         print('working')
         for move in self.chess_python_board.legal_moves:
             child_board = copy.copy(parent_board)
             child_board.parent.append(parent_board)
-            print(f'this is the the child board parent value: {child_board.white_pawns}, this is the child board: {child_board.white_pawns_possible_moves}')
+            print(f'this is the the child board parent value: {child_board.white_pawn}, this is the child board: {child_board.white_pawns_possible_moves}')
             curr_piece_type = self.chess_python_board.piece_type_at(move.from_square)
             curr_position =  move.from_square
             new_position = move.to_square
@@ -152,6 +169,8 @@ class bit_board():
 
 
 def main():
+    load_dotenv()
+    db_id = int(os.getenv('DATABASE_ID'))
     board = chess.Board()
     test_board = bit_board(board) 
     test_board.generate_moves(test_board)

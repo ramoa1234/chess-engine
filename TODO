@@ -3,3 +3,7 @@ finish selection function
 
 
 ? create a neural networl(something to reuse the tree that was lready generated) || rebuild on all possible moves and try to find the best possible one?
+
+remake board class to use dict for bitboards
+finish generate move
+make database and mode
