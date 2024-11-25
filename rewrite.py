@@ -73,24 +73,21 @@ class bit_board():
                     self.black_queen = ctypes.c_uint64(update_bit_board(self.black_queen.value, chess.square_name(square)))
                 if piece.piece_type == chess.KING and color == 'Black':
                     self.black_king = ctypes.c_uint64(update_bit_board(self.black_king.value, chess.square_name(square)))
+        cpp_lib = ctypes.CDLL('./mylib.dylib')
+        cpp_lib.node.argtypes = [ctypes.c_char_p, ctypes.c_int]
+        cpp_lib.node.restypes = ctypes.c_void_p
+        
+        
 
-
-
-    def connect_db(self):
-        user_name = os.getnev('DATABASE_USERNAME')
-        db_name = os.getenv('DATABASE_NAME')
-        db_connection = connection.MySQLConnection(user=user_name, password = '',
-                                                   host='127.0.0.1', 
-                                                   database=db_name)
-        connection = db_connection.cursor()
-        return connection
+    
 
     def lookup_move(self, board):
+        #LOOK UP MOVES CPP
         connection = self.connect_db() 
         connection.execute(f'SELECT ALL {board.places_filled} FROM moves')
 
     def insert(board):
-        #pass in list to sql for all possible children
+        #CPP INSERT MOVES INTO THE DATABASE
         pass
 
     #ONLY MEANT TO APPEND ALL CHILD OR PARENT NODES
@@ -161,9 +158,9 @@ class bit_board():
 
 
     def pick_move():
+        #CPP FIND BEST POSSIBLE MOVE
         pass
 
-#### TODO NEED TO MAKE DATABASE ROWS AND FIND OUT HOW TO MAKE IDS
 
 
 
